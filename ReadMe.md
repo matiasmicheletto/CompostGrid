@@ -8,6 +8,10 @@ El sistema debe efectuar la medición de temperatura y humedad de la pila de com
 
 ## Esquema general
 
+<center>
+<img src="Img/EsquemaGlobal.png" alt="Esquema global" width="500"/>
+</center>
+
 Para la comunicación inalámbrica se utilizará un módulo gprs que transmita los datos de adquisición de una serie de nodos conectados con enlace cableado. El arreglo de nodos consiste en un dispositivo central que opera como maestro y se encarga del reporte de datos al servidor y una serie de nodos esclavos que se conectan por medio de un bus que permite transmitir información entre los nodos mediante protocolo RS485. El protocolo RS485 admite una extensión cableada de hasta 30 metros dependiendo de la calidad de la línea y una tasa de transferencia de datos que puede llegar a los 10Mbps.  
 
 El requerimiento de cablear los distintos nodos implica una reducción significativa en términos de costo de implementación debido a que puede compartirse una misma fuente de energía y una sóla línea telefónica entre varios registradores. Cada nodo posee una fuente conmutada que adapta y regula el voltaje de la línea de alimentación y una interfase de comunicación para conectarse al bus de datos. La conexión a los sensores se realiza de la misma manera en todos los nodos. Esto se detalla en las siguientes secciones.  
@@ -22,6 +26,9 @@ El hardware está basado en los módulos Arduino UNO y el shield GSM/GPRS Sim900
 
 Tanto el módulo microcontrolador Arduino UNO como el shield GSM/GPRS operan con 5V de corriente continua. Como el sistema debe operar a la intemperie lejos de la red de energía eléctrica y las baterías más apropiadas y accesibles del mercado para esta aplicación son de 12V, se requiere de una fuente de voltaje regulado. La opción más económica es el integrado uA7805 pero tiene la desventaja de disipar mucha potencia aún con poco consumo lo cual resulta inconveniente para un dispositivo que debe operar con fuente de energía limitada. La fuente seleccionada es el módulo basado en el integrado LM2576 que posee salida regulada variable de 1.5 a 35Vcc y 3A máximo.
 
+<center>
+<img src="Img/StepDown.jpg" alt="Step Down" width="200"/>
+</center>
 
 ### Medición de temperatura
 
@@ -36,6 +43,10 @@ La humedad se mide indirectamente mediante conductividad eléctrica del sustrato
 
 Por otro lado, y para estabilizar la señal analógica, se utiliza un filtro capacitivo y un potenciómetro tipo trimmer que debe ajustarse dependiendo de los valores de resistividad del sustrato.  
 
+<center>
+<img src="Img/CircuitoHumedad.png" alt="" width="400"/>
+</center>
+
 ### Medición de voltaje de alimentación
 
 El monitoreo del voltaje de alimentación es importante para conocer el estado de las baterías, verificar la efectividad de los paneles solares y evitar que el sistema se detenga por falta de energía. Para esto se emplea un divisor resistivo con resistencias de 8k2Ω y 2k7Ω para reducir el voltaje de alimentación, que puede rondar de los 10 a 25 volts, un 25% aproximadamente, de manera que sea compatible con el rango de operación del conversor A/D del microcontrolador.  
@@ -48,10 +59,17 @@ Mediante un sensor de temperatura y humedad DHT22 se puede conocer los valores d
 
 El registro de datos al servidor se realiza por medio de un módulo basado en el chip Sim900 que permite, entre muchas otras funciones, conectarse a la red por GPRS. El módulo posee una interfase de comunicación serie (RS232) que funciona mediante comandos AT. Además dispone un array de siete pines que pueden ser configurados como Tx o Rx indistintamente y emplea los pines número 8 y 9 de Arduino UNO para reinicio y encendido/apagado respectivamente.  
 
+<center>
+<img src="Img/Sim900.jpeg" alt="Sim900" width="400"/>
+</center>
+
 ### Comunicación inter nodos
 
 Para la transmisión de datos de medición entre los diferentes nodos que no disponen de acceso a la red, se utiliza una conexión cableada que opera con protocolo RS485. Se utilizó el transceiver SN7517 que permite implementar el bus de comunicaciones utilizando mínima circuitería adicional. El bus requiere terminaciones con impedancias de 120Ω por lo que se agrega un jumper para desconectar las mismas en los módulos que sean intermedios.  
 
+<center>
+<img src="Img/Circuito485.png" alt="RS485" width="400"/>
+</center>
 
 ## Firmware
 
@@ -167,15 +185,27 @@ El puerto serie nativo del microcontrolador se utiliza para comunicación con PC
 
 Se diseñó un pcb tipo shield que sirve tanto para conectar directamente a la placa Arduino UNO como también para conectar al módulo GPRS que a la vez se conecta al Arduino UNO con lo cual tanto el firmware como hardware es el mismo independientemente de si el nodo operará como maestro o como esclavo, logrando de esta manera un diseño muy flexible y modular.
 
+<center>
+<img src="Img/Proto2.jpg" alt="Prototipo" width="600"/>
+</center>
+
 ### PCB
 
 El diseño del PCB se realizó con un programa CAD intentando lograr una plaqueta de tamaño reducido que no supere las dimensiones de los módulos utilizados. El shield implementado tiene unas dimensiones de 65x70 mm, lo cual cumple perfectamente con el requisito impuesto.
+
+<center>
+<img src="Img/PCB.jpg" alt="" width="400"/>
+</center>
 
 ### Gabinete
 
 Todos los componentes se ubican en el interior de una caja estanca de PVC con sellado impermeable. En la base se coloca un interruptor de encendido, conectores para las sondas de conductividad y bus de datos y en el exterior se puede atornillar un panel solar para la recarga de la batería.  
 
 El gabinete que contiene batería y panel solar debe ser de mayores dimensiones para alojar el espacio suficiente y no necesariamente debe contener el nodo maestro, que de hecho al tener un módulo de mayores dimensiones y una antena puede resultar conveniente ubicar en otra caja separada sin la batería de manera de optimizar espacio.  
+
+<center>
+<img src="Img/Final.jpg" alt="" width="300"/>
+</center>
 
 La base de la caja estanca posee una perforación para atravesar un caño metálico que se emplea como estaca para los dos sensores de temperatura y sirve tanto de soporte para la caja y panel solar en caso de estar presente este último.  
 
