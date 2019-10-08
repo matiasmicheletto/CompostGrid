@@ -1,5 +1,5 @@
 // Formato de trama de este dispositivo (cambiar ID para cada uno)
-#define DATA_MASK "ID=Mati&B0=%04d&T1=%04d&T2=%04d&H1=%04d&H2=%04d>" 
+#define DATA_MASK "ID=XXXX&B0=%04d&T1=%04d&T2=%04d&H1=%04d&H2=%04d>" 
 // Trama de caracteres para enviar datos medidos
 #define DATA_LENGTH 48 	// Longitud de las tramas de transmision (485 y sim900)
 #define START_CHAR 'I' 	// Caracter indicador de inicio de la trama (La I de ID)
@@ -54,29 +54,29 @@ unsigned long lastSampleTime = 0; // Instante de la ultima muestra
 // Buffers (deben inicializarse para que ande el micro)
 char rs485RcvdChars[DATA_LENGTH] =  "000000000000000000000000000000000000000000000000"; 
 char localVariables[DATA_LENGTH] =  "000000000000000000000000000000000000000000000000";
-boolean isMaster; 					// Indicador de precencia del sim900
+boolean isMaster;			// Indicador de precencia del sim900
 boolean new485Data = false; // Indicador de buffer actualizado
 
 SoftwareSerial Rs485(RS485_RX, RS485_TX); 		// RX, TX
 SoftwareSerial Sim900(SIM900_RX, SIM900_TX); 	// RX, TX
 
 // Prototipos
-void setup();									// Inicializacion del datalogger
-void loop();									// Temporizado - escucha de puerto serie bus 485
-void acquire();								// Leer pines analogicos
-void sim900Init();						// Inicializar modulo GSM
-void logToServer(bool local); // Mandar datos al server (locales o recibidas)
-void logToServerTest();				// Hacer pueba de logeo de datos
-void logTo485();		// Mandar datos por bus 485
-void read485Buffer();					// Leer datos que llegan del bus 485
-void serialEvent();						// Callback de llegada de datos al puerto serie nativo
+void setup();					// Inicializacion del datalogger
+void loop();					// Temporizado - escucha de puerto serie bus 485
+void acquire();					// Leer pines analogicos
+void sim900Init();				// Inicializar modulo GSM
+void logToServer(bool local); 	// Mandar datos al server (locales o recibidas)
+void logToServerTest();			// Hacer pueba de logeo de datos
+void logTo485();				// Mandar datos por bus 485
+void read485Buffer();			// Leer datos que llegan del bus 485
+void serialEvent();				// Callback de llegada de datos al puerto serie nativo
 
 
 void setup(){
-  Serial.begin(9600);
-  #ifdef DEBUG
-    Serial.println("Iniciando datalogger... ");
-  #endif
+  	Serial.begin(9600);
+  	#ifdef DEBUG
+    	Serial.println("Iniciando datalogger... ");
+  	#endif
 
 	// Entradas. Creo que no hace falta para analogicos, pero por las dudas
 	pinMode(BAT_PIN, INPUT);
@@ -89,39 +89,39 @@ void setup(){
 	pinMode(PWR_ZH, OUTPUT);
 	pinMode(RS485_ENABLE, OUTPUT);
 	pinMode(SIM900_ENABLE, OUTPUT);
-  #ifdef DEBUG
-   Serial.println("Pines digitales configurados.");
-  #endif
+	#ifdef DEBUG
+		Serial.println("Pines digitales configurados.");
+	#endif
 
-  digitalWrite(SIM900_ENABLE,LOW);
-  delay(100);
-  digitalWrite(SIM900_ENABLE,HIGH);
-  delay(500);
-  digitalWrite(SIM900_ENABLE,LOW);
+	digitalWrite(SIM900_ENABLE,LOW);
+	delay(100);
+	digitalWrite(SIM900_ENABLE,HIGH);
+	delay(500);
+	digitalWrite(SIM900_ENABLE,LOW);
 
-	// Checkear sim900
-  #ifdef DEBUG
-    Serial.print("Detectando SIM900... ");
-  #endif
+		// Checkear sim900
+	#ifdef DEBUG
+		Serial.print("Detectando SIM900... ");
+	#endif
 
 	isMaster = false;
-  Sim900.begin(9600); // Inicializar puerto serie del sim900
+	Sim900.begin(9600); // Inicializar puerto serie del sim900
 	delay(500);
 	Sim900.println("AT");
 	delay(200);
 	if(Sim900.available()){ // Si hay caracteres en buffer significa que el sim900 esta conectado
 		while(Sim900.available())
 			Sim900.read(); // Vaciar buffer del softwareserial
-    #ifdef DEBUG
-      Serial.println(" Sim900 detectado. Modo maestro.");
-    #endif
+	#ifdef DEBUG
+	Serial.println(" Sim900 detectado. Modo maestro.");
+	#endif
 		isMaster = true;
 		delay(5000);
 		sim900Init(); // Comandos de inicializacion del sim900
 	}else{
-    #ifdef DEBUG
-      Serial.println(" Sim900 no detectado. Modo esclavo.");
-    #endif
+	#ifdef DEBUG
+	Serial.println(" Sim900 no detectado. Modo esclavo.");
+	#endif
 		isMaster = false; // No hace falta repetir, pero para que no quede el else vacio
 		delay(120000);
 	}
@@ -129,15 +129,15 @@ void setup(){
 
 	// Iniciar el SoftwareSerial para el bus 485 (tiene que estar siempre encendido)
 	#ifdef DEBUG
-    Serial.print("Iniciando bus 485... ");
-  #endif
+	Serial.print("Iniciando bus 485... ");
+	#endif
 	Rs485.begin(9600);
 	Rs485.listen();
 	#ifdef DEBUG
-    Serial.println("Listo.");
-  #endif
+		Serial.println("Listo.");
+	#endif
 
-  lastSampleTime = millis(); // Inicializar timer
+	lastSampleTime = millis(); // Inicializar timer
 
 	#ifdef DEBUG
 		Serial.println("Datalogger listo.");
@@ -146,8 +146,8 @@ void setup(){
 
 void acquire(){ // Realizar lectura de sensores y guarda en variables locales
 	#ifdef DEBUG
-    Serial.print("Adquiriendo datos...");
-  #endif
+    	Serial.print("Adquiriendo datos...");
+  	#endif
 
 	unsigned int B, T1, T2, H1, H2;  // Variables para sensores conectados
 
@@ -182,7 +182,6 @@ void acquire(){ // Realizar lectura de sensores y guarda en variables locales
 	analogReference(DEFAULT); // Volver a configurar la referencia de 5V (no requiere espera)
 	analogRead(A0); // Primera lectura puede ser erronea
 
-
 	digitalWrite(PWR_ZH,HIGH); // Encender sensores de humedad
 	delay(250); // Demora de estabilizacion de senial
 	
@@ -205,41 +204,39 @@ void acquire(){ // Realizar lectura de sensores y guarda en variables locales
 
 	B = analogRead(BAT_PIN); // Medir voltaje de bateria
 
-  #ifdef DEBUG
-    Serial.print("Datos (B,T1,T2,H1,H2: ");
-    Serial.print(B);
-    Serial.print(" ");
-    Serial.print(T1);
-    Serial.print(" ");
-    Serial.print(T2);
-    Serial.print(" ");
-    Serial.print(H1);
-    Serial.print(" ");
-    Serial.println(H2);    
-  #endif
+	#ifdef DEBUG
+		Serial.print("Datos (B,T1,T2,H1,H2: ");
+		Serial.print(B);
+		Serial.print(" ");
+		Serial.print(T1);
+		Serial.print(" ");
+		Serial.print(T2);
+		Serial.print(" ");
+		Serial.print(H1);
+		Serial.print(" ");
+		Serial.println(H2);    
+	#endif
   
-
 	// Guardar datos en buffer de 48 caracteres
 	sprintf(localVariables, DATA_MASK, B, T1, T2, H1, H2);
 
-  #ifdef DEBUG
-    Serial.println(" Listo.");
-  #endif
+	#ifdef DEBUG
+		Serial.println(" Listo.");
+	#endif
 }
 
 void logTo485(){ // Enviar datos a los demas nodos por bus 485
-  #ifdef DEBUG
-    Serial.print("Enviando datos por bus 485: ");
+  	#ifdef DEBUG
+    	Serial.print("Enviando datos por bus 485: ");
 		Serial.println(localVariables);
-  #endif
+  	#endif
 	digitalWrite(RS485_ENABLE,HIGH); // Habilitar canal de transmision
 	Rs485.print(localVariables);
 	digitalWrite(RS485_ENABLE,LOW); // Deshabilitar canal de transimision para quedar en escucha
-  #ifdef DEBUG
-    Serial.println("Fin comunicacion por bus 485.");
-  #endif
+  	#ifdef DEBUG
+    	Serial.println("Fin comunicacion por bus 485.");
+  	#endif
 }
-
 
 void sim900Init(){ // Comandos de configuracion del sim900 como modulo gsm
 	Sim900.println("AT+SAPBR=3,1,\"Contype\",\"GPRS\"");
@@ -251,7 +248,7 @@ void sim900Init(){ // Comandos de configuracion del sim900 como modulo gsm
 	#ifdef DEBUG
 		while(Sim900.available())
 			Serial.write(Sim900.read());
-  #endif
+ 	 #endif
 	Sim900.println("AT+HTTPINIT");
 	delay(1000);
 	Sim900.println("AT+HTTPPARA=\"CID\",1");
@@ -260,15 +257,17 @@ void sim900Init(){ // Comandos de configuracion del sim900 como modulo gsm
  	#ifdef DEBUG
 		while(Sim900.available())
 			Serial.write(Sim900.read());
-  #endif
+  	#endif
 }
 
 void logToServer(bool local){ // Reportar datos en server
-  #ifdef DEBUG
-    Serial.print("Enviando datos al server: ");
-		if(local) Serial.println(localVariables); // Mostrar lo que se envia
-		else Serial.println(rs485RcvdChars);
-  #endif
+	#ifdef DEBUG
+		Serial.print("Enviando datos al server: ");
+			if(local) 
+				Serial.println(localVariables); // Mostrar lo que se envia
+			else 
+				Serial.println(rs485RcvdChars);
+	#endif
 	
 	Rs485.end(); // Detener la escucha del bus para escribir al sim900
 	Sim900.begin(9600);
@@ -282,15 +281,15 @@ void logToServer(bool local){ // Reportar datos en server
 	delay(500);
 	Sim900.println("AT+HTTPACTION=2");
 	delay(750);
-  Sim900.println("AT+HTTPACTION=2");
-  delay(750);
-  Sim900.println("AT+HTTPACTION=2");
-  delay(750);
- 	#ifdef DEBUG
-    Serial.println("Fin comunicacion con server.");
-		while(Sim900.available())
-			Serial.write(Sim900.read());
-  #endif
+	Sim900.println("AT+HTTPACTION=2");
+	delay(750);
+	Sim900.println("AT+HTTPACTION=2");
+	delay(750);
+		#ifdef DEBUG
+		Serial.println("Fin comunicacion con server.");
+			while(Sim900.available())
+				Serial.write(Sim900.read());
+	  #endif
 	Sim900.end(); // Detener la comunicacion con el sim900 para escuchar el bus485
 	Rs485.begin(9600);
 	Rs485.listen();
@@ -300,14 +299,14 @@ void logToServerTest(){ // Prueba de enviar datos fijos
 	Rs485.end(); // Detener la escucha del bus para escribir al sim900
 	Sim900.begin(9600);
 	delay(200);
-	Sim900.println("AT+HTTPPARA=\"URL\",\"http://ascasubi.inta.gob.ar/redae/insertar.php?ID=Mati&B0=0001&T1=0001&T2=0001&H1=0001&H2=0001>\"");
-  delay(500);
+	Sim900.println("AT+HTTPPARA=\"URL\",\"http://.....................?ID=XXXX&B0=0001&T1=0001&T2=0001&H1=0001&H2=0001>\"");
+  	delay(500);
 	Sim900.println("AT+HTTPACTION=2");
 	delay(1000);
 	#ifdef DEBUG
     while(Sim900.available())
 			Serial.write(Sim900.read());
-  #endif
+	#endif
 	Sim900.end();
 	Rs485.begin(9600);
 	Rs485.listen();
@@ -315,33 +314,33 @@ void logToServerTest(){ // Prueba de enviar datos fijos
 
 void serialEvent(){ // Interrupcion de puerto serie
 	switch((char) Serial.read()){  
-	  case 'a': // Medir y responder datos
-    {
-	  	Serial.readStringUntil('\n'); // Limpiar buffer
-	  	acquire(); // Medir
-			Serial.println(localVariables);
-	  	break;
-    }
-    case 'b': // Enviar datos de la ultima medicion (sin actualizar)
-    {
-      Serial.readStringUntil('\n'); // Limpiar buffer
-      Serial.println(localVariables);
-      break;
-    }
-	  case 'c': // Medir y transmitir datos al server
+		case 'a': // Medir y responder datos
+		{
+			Serial.readStringUntil('\n'); // Limpiar buffer
+			acquire(); // Medir
+				Serial.println(localVariables);
+			break;
+		}
+		case 'b': // Enviar datos de la ultima medicion (sin actualizar)
+		{
+		Serial.readStringUntil('\n'); // Limpiar buffer
+		Serial.println(localVariables);
+		break;
+		}
+		case 'c': // Medir y transmitir datos al server
 		{
 			Serial.readStringUntil('\n'); // Limpiar buffer
 			acquire(); // Medir
 			logToServer(true); // Transmitir
-      break;
-    }
+			break;
+		}
 		case 'd': // Medir y transmitir datos al bus 485
 		{
 			Serial.readStringUntil('\n'); // Limpiar buffer
 			acquire(); // Medir
 			logTo485();
-      break;
-    }
+			break;
+		}
 		case 'e': // Comandos de inicializacion del sim900
 		{
 			Serial.readStringUntil('\n'); // Limpiar buffer
@@ -353,7 +352,7 @@ void serialEvent(){ // Interrupcion de puerto serie
 			Sim900.end();
 			Rs485.begin(9600);
 			Rs485.listen();
-      break;
+			break;
 		}
 		case 'f': // Query bearer - Checkear configuracion del server
 		{
@@ -369,23 +368,23 @@ void serialEvent(){ // Interrupcion de puerto serie
 			Sim900.end();
 			Rs485.begin(9600);
 			Rs485.listen();
-      break;
+			break;
 		}
 		case 'g': // Enviar comando al sim900
-    {
-	  	String arg = Serial.readStringUntil('\n'); // Comando
+		{
+			String arg = Serial.readStringUntil('\n'); // Comando
 			Rs485.end();
 			Sim900.begin(9600);
 			delay(200);
 			Sim900.println(arg);
 			delay(1000);
-		 	while(Sim900.available())
+			while(Sim900.available())
 				Serial.write(Sim900.read());
 			Sim900.end();
 			Rs485.begin(9600);
 			Rs485.listen();
-	  	break;
-    }
+			break;
+		}
 		case 'h': // Encender/apagar sim900
 		{
 			Serial.readStringUntil('\n');
@@ -402,13 +401,13 @@ void serialEvent(){ // Interrupcion de puerto serie
 			logToServerTest(); // Transmitir
 			break;
 		}
-	  default:
+		default:
 		{
-		  Serial.readStringUntil('\n'); // Limpiar buffer 
-      #ifdef DEBUG
-	  	  Serial.println("Comando desconocido");
-      #endif
-	  	break;
+			Serial.readStringUntil('\n'); // Limpiar buffer 
+			#ifdef DEBUG
+				Serial.println("Comando desconocido");
+			#endif
+			break;
 		}
 	}
 }
@@ -453,13 +452,11 @@ void read485Buffer() { // Leer todo el buffer del puerto 485 hasta timeout o has
 	}
 }
 
-
 void loop(){
 	if(millis() < lastSampleTime) // Overflow de millis (cada 49 días)
 		lastSampleTime = millis();
 	
 	if(millis() - lastSampleTime > SAMPLE_TIMEOUT){ // Muestreo periodico
-
 		acquire(); // Actualizar las medidas de las variables locales		
 
 		if(isMaster)
